@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MADRL for LTE-U/WiFi Coexistence: An Interactive Framework</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link.active {
+            color: #0d9488;
+            border-bottom-color: #0d9488;
+        }
+        .nav-link:not(.active) {
+            border-bottom-color: transparent;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-slate-200">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-teal-700">MADRL Framework</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#introduction" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-teal-600 border-b-2">Introduction</a>
+                        <a href="#framework" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-teal-600 border-b-2">Framework</a>
+                        <a href="#simulation" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-teal-600 border-b-2">Simulation</a>
+                        <a href="#analysis" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-teal-600 border-b-2">Analysis</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="introduction" class="py-16 md:py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">Investigating LTE-U & WiFi Coexistence</h1>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-600">This framework explores how Multi-Agent Deep Reinforcement Learning (MADRL) can enhance spectrum efficiency and ensure fairness when LTE-U and WiFi networks operate in the same unlicensed frequency bands.</p>
+                
+                <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                    <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-red-100 text-red-600 rounded-lg p-3">
+                                <span class="text-2xl">📡</span>
+                            </div>
+                            <h3 class="ml-4 text-xl font-semibold text-slate-900">The Coexistence Challenge</h3>
+                        </div>
+                        <p class="mt-4 text-slate-600">LTE-U uses a scheduled, persistent channel access method, which can dominate the unlicensed spectrum. WiFi relies on a "listen-before-talk" (CSMA/CA) mechanism. Without a coordination strategy, LTE-U transmissions can block WiFi indefinitely, a problem known as "WiFi starvation," leading to poor performance and unfair resource allocation.</p>
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-teal-100 text-teal-600 rounded-lg p-3">
+                                <span class="text-2xl">🧠</span>
+                            </div>
+                            <h3 class="ml-4 text-xl font-semibold text-slate-900">The MADRL Solution</h3>
+                        </div>
+                        <p class="mt-4 text-slate-600">MADRL provides an intelligent solution. Multiple agents (e.g., LTE-U base stations) independently learn optimal behaviors by observing the network environment and receiving rewards or penalties. They learn to adapt their transmission patterns (like duty cycles) to maximize overall system performance while ensuring WiFi networks get a fair chance to communicate, all without explicit coordination.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="framework" class="py-16 md:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">MADRL Framework Explorer</h2>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-slate-600">This diagram illustrates the core components of the Multi-Agent Deep Reinforcement Learning loop used in our simulation. Each agent independently cycles through this process to learn a cooperative coexistence policy.</p>
+                </div>
+
+                <div class="mt-12 p-8 bg-white rounded-xl shadow-md border border-slate-200">
+                    <div class="flex flex-col md:flex-row items-center justify-around gap-8">
+                        
+                        <div class="text-center w-full md:w-1/3 p-4 bg-slate-50 rounded-lg">
+                            <h4 class="font-bold text-teal-700 text-lg">1. Environment</h4>
+                            <p class="text-sm text-slate-600 mt-2">The shared radio space containing LTE-U eNBs, WiFi APs, and users. The environment's state changes based on agents' actions and external factors like traffic load.</p>
+                            <div class="text-4xl mt-4">🌐</div>
+                        </div>
+
+                        <div class="text-2xl text-slate-400 font-mono hidden md:block">&rarr;</div>
+                        <div class="text-2xl text-slate-400 font-mono md:hidden">&darr;</div>
+
+                        <div class="w-full md:w-2/3">
+                            <div class="border-2 border-dashed border-slate-300 rounded-lg p-6">
+                                <h3 class="text-center text-xl font-semibold text-slate-800">Agent Learning Loop</h3>
+                                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                                    <div class="flex flex-col items-center p-3 bg-white rounded">
+                                        <h4 class="font-bold text-teal-700">2. Observe State (S)</h4>
+                                        <p class="text-xs text-slate-500 mt-1">Agent senses channel occupancy, WiFi throughput, and its own data queue.</p>
+                                        <div class="text-3xl mt-2">📊</div>
+                                    </div>
+                                    <div class="flex flex-col items-center p-3 bg-white rounded">
+                                        <h4 class="font-bold text-teal-700">3. Select Action (A)</h4>
+                                        <p class="text-xs text-slate-500 mt-1">Based on its policy, the agent chooses an action: adjust duty cycle, change power, etc.</p>
+                                        <div class="text-3xl mt-2">🕹️</div>
+                                    </div>
+                                    <div class="flex flex-col items-center p-3 bg-white rounded">
+                                        <h4 class="font-bold text-teal-700">4. Get Reward (R)</h4>
+                                        <p class="text-xs text-slate-500 mt-1">Receives a reward based on system throughput and fairness. The policy is updated.</p>
+                                        <div class="text-3xl mt-2">🏆</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="simulation" class="py-16 md:py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="lg:text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">Interactive Simulation</h2>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-slate-600">Configure the network scenario and select a coexistence algorithm. Press "Run Simulation" to see how your choices impact network performance in the Analysis section below.</p>
+                </div>
+                <div class="mt-12 max-w-4xl mx-auto bg-slate-50 p-8 rounded-xl border border-slate-200">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                        <div>
+                            <label for="lte-agents" class="block text-sm font-medium text-slate-700">Number of LTE-U Agents</label>
+                            <input id="lte-agents" type="range" min="0" max="10" value="3" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="text-center font-semibold text-teal-700 mt-1"><span id="lte-agents-value">3</span></div>
+                        </div>
+                        <div>
+                            <label for="wifi-aps" class="block text-sm font-medium text-slate-700">Number of WiFi APs</label>
+                            <input id="wifi-aps" type="range" min="0" max="10" value="5" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                             <div class="text-center font-semibold text-teal-700 mt-1"><span id="wifi-aps-value">5</span></div>
+                        </div>
+                        <div class="md:col-span-2">
+                             <label for="traffic-load" class="block text-sm font-medium text-slate-700">Shared Traffic Load</label>
+                            <input id="traffic-load" type="range" min="1" max="5" value="3" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="text-center font-semibold text-teal-700 mt-1"><span id="traffic-load-value">Medium</span></div>
+                        </div>
+                        <div>
+                            <label for="coexistence-algorithm" class="block text-sm font-medium text-slate-700">Coexistence Algorithm</label>
+                            <select id="coexistence-algorithm" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md">
+                                <option value="madrl">MADRL</option>
+                                <option value="duty_cycle">Fixed Duty Cycle (50%)</option>
+                                <option value="no_algorithm">No Algorithm (LTE Dominant)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="run-simulation" class="w-full bg-teal-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition duration-300">
+                                Run Simulation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="analysis" class="py-16 md:py-24">
+             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="lg:text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">Performance Analysis</h2>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-slate-600">The results of the simulation are visualized below. Compare the key performance indicators (KPIs) to understand the effectiveness of the selected coexistence algorithm.</p>
+                </div>
+
+                <div id="results-placeholder" class="text-center mt-12 text-slate-500">
+                    <p>Run a simulation to view performance results here.</p>
+                </div>
+
+                <div id="results-container" class="hidden mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                        <h3 class="text-lg font-semibold text-center text-slate-800">System Throughput (Mbps)</h3>
+                        <div class="chart-container">
+                            <canvas id="throughputChart"></canvas>
+                        </div>
+                        <button onclick="downloadChart('throughputChart')" 
+                            class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                            Download Throughput
+                        </button>
+                    </div>
+                     <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                        <h3 class="text-lg font-semibold text-center text-slate-800">Jain's Fairness Index</h3>
+                         <div class="chart-container">
+                            <canvas id="fairnessChart"></canvas>
+                        </div>
+                        <button onclick="downloadChart('fairnessChart')" 
+                        class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                        Download Fairness
+                    </button>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 lg:col-span-2">
+                         <h3 class="text-lg font-semibold text-center text-slate-800">Packet Loss Rate (%)</h3>
+                         <div class="chart-container">
+                            <canvas id="packetLossChart"></canvas>
+                        </div>
+                        <button onclick="downloadChart('packetLossChart')" 
+                            class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                            Download Packet Loss
+                        </button>
+                    </div>
+                </div>
+
+                <!-- RL Panel -->
+                <div id="rl-panel" class="mt-10 hidden bg-gray-100 p-6 rounded shadow">
+                    <h2 class="text-xl font-bold mb-4">RL Agent Behavior</h2>
+                    <p><strong>Duty Cycle:</strong> <span id="rl-duty">-</span></p>
+                    <p><strong>Reward:</strong> <span id="rl-reward">-</span></p>
+                </div>
+
+                <!-- History Table -->
+                <div class="mt-16">
+                    <h2 class="text-2xl font-bold text-center mb-6">Simulation History</h2>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border border-gray-300 text-sm text-left">
+                            <thead class="bg-gray-200">
+                                <tr>
+                                    <th class="px-4 py-2 border">LTE</th>
+                                    <th class="px-4 py-2 border">WiFi</th>
+                                    <th class="px-4 py-2 border">Algorithm</th>
+                                    <th class="px-4 py-2 border text-right">Total Throughput</th>
+                                    <th class="px-4 py-2 border text-right">Fairness</th>
+                                    <th class="px-4 py-2 border">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table" class="bg-white">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+             </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-800 text-white">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p>MADRL Interactive Framework | A Conceptual Tool for Spectrum Efficiency Research</p>
+        </div>
+    </footer>
+
+    <script>
+        // Global variables
+        let throughputChart, fairnessChart, packetLossChart;
+        
+        // Traffic label mapping
+        const trafficLabels = { 1: 'Very Low', 2: 'Low', 3: 'Medium', 4: 'High', 5: 'Very High' };
+
+        // DOM Elements
+        const lteSlider = document.getElementById('lte-agents');
+        const lteValue = document.getElementById('lte-agents-value');
+        const wifiSlider = document.getElementById('wifi-aps');
+        const wifiValue = document.getElementById('wifi-aps-value');
+        const trafficSlider = document.getElementById('traffic-load');
+        const trafficValue = document.getElementById('traffic-load-value');
+        const runButton = document.getElementById('run-simulation');
+        const algorithmSelect = document.getElementById('coexistence-algorithm');
+        const resultsPlaceholder = document.getElementById('results-placeholder');
+        const resultsContainer = document.getElementById('results-container');
+        const rlPanel = document.getElementById('rl-panel');
+        const dutyEl = document.getElementById('rl-duty');
+        const rewardEl = document.getElementById('rl-reward');
+
+        // Initialize sliders
+        lteSlider.addEventListener('input', () => lteValue.textContent = lteSlider.value);
+        wifiSlider.addEventListener('input', () => wifiValue.textContent = wifiSlider.value);
+        trafficSlider.addEventListener('input', () => trafficValue.textContent = trafficLabels[trafficSlider.value]);
+
+        // Chart options
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        };
+
+        // Initialize charts
+        function initializeCharts() {
+            const throughputCtx = document.getElementById('throughputChart').getContext('2d');
+            throughputChart = new Chart(throughputCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['LTE-U', 'WiFi', 'Total'],
+                    datasets: []
+                },
+                options: chartOptions
+            });
+
+            const fairnessCtx = document.getElementById('fairnessChart').getContext('2d');
+            fairnessChart = new Chart(fairnessCtx, {
+                type: 'bar',
+                data: {
+                    labels: ["Jain's Fairness Index"],
+                    datasets: []
+                },
+                options: {
+                    ...chartOptions,
+                    scales: { y: { beginAtZero: true, max: 1 } }
+                }
+            });
+
+            const packetLossCtx = document.getElementById('packetLossChart').getContext('2d');
+            packetLossChart = new Chart(packetLossCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['LTE-U', 'WiFi'],
+                    datasets: []
+                },
+                options: {
+                    ...chartOptions,
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+        }
+
+        // Update charts with data
+        function updateCharts(data) {
+            const { throughput, fairness, packetLoss } = data;
+            
+            throughputChart.data.datasets = [{
+                label: 'Throughput (Mbps)',
+                data: throughput,
+                backgroundColor: ['#0f766e', '#14b8a6', '#64748b'],
+            }];
+            throughputChart.update();
+
+            fairnessChart.data.datasets = [{
+                label: 'Fairness Index',
+                data: fairness,
+                backgroundColor: ['#0d9488'],
+            }];
+            fairnessChart.update();
+
+            packetLossChart.data.datasets = [{
+                label: 'Packet Loss (%)',
+                data: packetLoss,
+                backgroundColor: ['#0f766e', '#14b8a6'],
+            }];
+            packetLossChart.update();
+        }
+
+        // Call backend API to run simulation
+        async function runSimulation(settings) {
+            try {
+                const response = await fetch('/api/run/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        lte_agents: settings.lte,
+                        wifi_aps: settings.wifi,
+                        traffic: settings.traffic,
+                        algorithm: settings.algorithm
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error running simulation:', error);
+                // Return mock data as fallback
+                return {
+                    throughput: [0, 0, 0],
+                    fairness: [0],
+                    packetLoss: [0, 0],
+                    rl: null
+                };
+            }
+        }
+
+        // Load simulation history from backend
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/history/');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                const table = document.getElementById('history-table');
+                table.innerHTML = '';
+
+                if (data.length === 0) {
+                    table.innerHTML = '<tr><td colspan="6" class="text-center py-4">No simulations run yet</td></tr>';
+                    return;
+                }
+
+                data.forEach(run => {
+                    const row = `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 border">${run.lte_agents}</td>
+                            <td class="px-4 py-2 border">${run.wifi_aps}</td>
+                            <td class="px-4 py-2 border">${run.algorithm}</td>
+                            <td class="px-4 py-2 border text-right">${run.throughput_total.toFixed(2)}</td>
+                            <td class="px-4 py-2 border text-right">${run.fairness.toFixed(3)}</td>
+                            <td class="px-4 py-2 border">${new Date(run.created_at).toLocaleString()}</td>
+                        </tr>
+                    `;
+                    table.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error loading history:', error);
+                const table = document.getElementById('history-table');
+                table.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">Error loading history</td></tr>';
+            }
+        }
+
+        // Download chart as PNG
+        function downloadChart(chartId) {
+            const canvas = document.getElementById(chartId);
+            const now = new Date().toISOString().replace(/[:.]/g, '-');
+            const link = document.createElement('a');
+            link.download = `${chartId}_${now}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Make downloadChart available globally
+        window.downloadChart = downloadChart;
+
+        // Navigation and scroll handling
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.4
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href').substring(1) === entry.target.id) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+        
+        navLinks.forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Main run button click handler
+        runButton.addEventListener('click', async () => {
+            const settings = {
+                lte: parseInt(lteSlider.value),
+                wifi: parseInt(wifiSlider.value),
+                traffic: parseInt(trafficSlider.value),
+                algorithm: algorithmSelect.value
+            };
+            
+            // Initialize charts if not already done
+            if (!throughputChart) {
+                initializeCharts();
+            }
+
+            // Show results container
+            resultsPlaceholder.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+            
+            // Run simulation
+            const data = await runSimulation(settings);
+            
+            // Update charts with results
+            updateCharts(data);
+            
+            // Update RL panel if data contains RL info
+            if (data.rl) {
+                rlPanel.classList.remove('hidden');
+                dutyEl.textContent = data.rl.duty_cycle.toFixed(2);
+                rewardEl.textContent = data.rl.reward.toFixed(2);
+            } else {
+                rlPanel.classList.add('hidden');
+            }
+            
+            // Reload history table
+            await loadHistory();
+            
+            // Scroll to analysis section
+            document.getElementById('analysis').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Load history on page load
+        loadHistory();
+        
+        // Set initial slider values display
+        lteValue.textContent = lteSlider.value;
+        wifiValue.textContent = wifiSlider.value;
+        trafficValue.textContent = trafficLabels[trafficSlider.value];
+    </script>
+</body>
+</html>
