@@ -1,27 +1,51 @@
 import random
+import json
+import os
 
-class SimpleRLAgent:
-    def __init__(self):
-        self.actions = [0.2, 0.4, 0.6, 0.8, 1.0]
-        self.q_table = {}
+Q_TABLE_FILE = "q_table.json"
 
-    def get_state_key(self, state):
-        return tuple(state)
+# Possible duty cycle actions
+ACTIONS = [0.3, 0.5, 0.7, 0.9]
 
-    def select_action(self, state):
-        key = self.get_state_key(state)
+# Learning parameters
+ALPHA = 0.1   # learning rate
+GAMMA = 0.9   # discount factor
+EPSILON = 0.2 # exploration rate
 
-        if key not in self.q_table:
-            self.q_table[key] = [0] * len(self.actions)
 
-        # ε-greedy
-        if random.random() < 0.2:
-            return random.choice(self.actions)
+def load_q_table():
+    if os.path.exists(Q_TABLE_FILE):
+        with open(Q_TABLE_FILE, "r") as f:
+            return json.load(f)
+    return {}
 
-        return self.actions[self.q_table[key].index(max(self.q_table[key]))]
 
-    def update(self, state, action, reward):
-        key = self.get_state_key(state)
-        idx = self.actions.index(action)
+def save_q_table(q_table):
+    with open(Q_TABLE_FILE, "w") as f:
+        json.dump(q_table, f)
 
-        self.q_table[key][idx] += 0.1 * (reward - self.q_table[key][idx])
+
+def get_state(lte_agents, wifi_aps, traffic):
+    return f"{lte_agents}_{wifi_aps}_{traffic}"
+
+
+def choose_action(state, q_table):
+    if random.uniform(0, 1) < EPSILON:
+        return random.choice(ACTIONS)
+
+    if state not in q_table:
+        q_table[state] = {str(a): 0 for a in ACTIONS}
+
+    return float(max(q_table[state], key=q_table[state].get))
+
+
+def update_q_table(q_table, state, action, reward):
+    action = str(action)
+
+    if state not in q_table:
+        q_table[state] = {str(a): 0 for a in ACTIONS}
+
+    current_q = q_table[state][action]
+    new_q = current_q + ALPHA * (reward - current_q)
+
+    q_table[state][action] = new_q

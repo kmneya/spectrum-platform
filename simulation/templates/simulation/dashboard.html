@@ -9,6 +9,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Tech Slate and Teal -->
+    <!-- Application Structure Plan: The application is designed as a single-page, multi-section interactive dashboard. The structure follows a logical, task-oriented flow: 1. Introduction (Problem Context), 2. Framework Explorer (Solution Architecture), 3. Interactive Simulation (User Engagement & Parameterization), and 4. Performance Analysis (Results & Comparison). This structure was chosen over a linear report format to guide the user from understanding the core challenge of LTE-U/WiFi coexistence to actively exploring the MADRL solution and immediately seeing its simulated impact on key performance indicators. This facilitates a deeper, more intuitive understanding of the framework's value. -->
+    <!-- Visualization & Content Choices: 
+        - Coexistence Problem (Intro): Report Info -> Core challenge of spectrum sharing. Goal -> Inform. Viz/Presentation -> Thematic cards with icons. Interaction -> Static. Justification -> Quickly conveys the fundamental conflict without complexity. Library/Method -> HTML/Tailwind.
+        - MADRL Framework Diagram (Framework Explorer): Report Info -> Components of the reinforcement learning model. Goal -> Organize/Explain. Viz/Presentation -> A flowchart-style diagram. Interaction -> Static visual reference. Justification -> Visually breaks down the complex MADRL loop into understandable parts (Environment, Agent, State, Action, Reward) using only HTML/CSS, adhering to the no-SVG constraint. Library/Method -> HTML/Tailwind (Flexbox/Grid).
+        - Simulation Controls (Interactive Simulation): Report Info -> Variables affecting network performance. Goal -> Interact/Explore. Viz/Presentation -> Sliders and dropdowns for user input. Interaction -> User-configurable parameters. Justification -> Empowers the user to create 'what-if' scenarios, making the framework a hands-on investigative tool. Library/Method -> HTML Forms.
+        - Performance Metrics (Performance Analysis): Report Info -> Quantitative results of different coexistence methods. Goal -> Compare/Analyze. Viz/Presentation -> Dynamic bar and line charts. Interaction -> Charts update based on simulation parameters. Justification -> Chart.js provides a clear, quantitative comparison of outcomes (Throughput, Fairness, Packet Loss), proving the efficacy of the MADRL approach. Library/Method -> Chart.js/Canvas. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -193,63 +201,31 @@
                         <div class="chart-container">
                             <canvas id="throughputChart"></canvas>
                         </div>
-                        <button onclick="downloadChart('throughputChart')" 
-                            class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-                            Download Throughput
-                        </button>
                     </div>
                      <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
                         <h3 class="text-lg font-semibold text-center text-slate-800">Jain's Fairness Index</h3>
                          <div class="chart-container">
                             <canvas id="fairnessChart"></canvas>
                         </div>
-                        <button onclick="downloadChart('fairnessChart')" 
-                        class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-                        Download Fairness
-                    </button>
                     </div>
                     <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 lg:col-span-2">
                          <h3 class="text-lg font-semibold text-center text-slate-800">Packet Loss Rate (%)</h3>
                          <div class="chart-container">
                             <canvas id="packetLossChart"></canvas>
                         </div>
-                        <button onclick="downloadChart('packetLossChart')" 
-                            class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-                            Download Packet Loss
-                        </button>
-                    </div>
-                </div>
-
-                <!-- RL Panel -->
-                <div id="rl-panel" class="mt-10 hidden bg-gray-100 p-6 rounded shadow">
-                    <h2 class="text-xl font-bold mb-4">RL Agent Behavior</h2>
-                    <p><strong>Duty Cycle:</strong> <span id="rl-duty">-</span></p>
-                    <p><strong>Reward:</strong> <span id="rl-reward">-</span></p>
-                </div>
-
-                <!-- History Table -->
-                <div class="mt-16">
-                    <h2 class="text-2xl font-bold text-center mb-6">Simulation History</h2>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full border border-gray-300 text-sm text-left">
-                            <thead class="bg-gray-200">
-                                <tr>
-                                    <th class="px-4 py-2 border">LTE</th>
-                                    <th class="px-4 py-2 border">WiFi</th>
-                                    <th class="px-4 py-2 border">Algorithm</th>
-                                    <th class="px-4 py-2 border text-right">Total Throughput</th>
-                                    <th class="px-4 py-2 border text-right">Fairness</th>
-                                    <th class="px-4 py-2 border">Time</th>
-                                </tr>
-                            </thead>
-                            <tbody id="history-table" class="bg-white">
-                            </tbody>
-                        </table>
                     </div>
                 </div>
              </div>
+             <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 lg:col-span-2">
+                <h3 class="text-lg font-semibold text-center text-slate-800">
+                    RL Learning Curve
+                </h3>
+                <div class="chart-container">
+                    <canvas id="rlChart"></canvas>
+                </div>
+            </div>
         </section>
+
     </main>
 
     <footer class="bg-slate-800 text-white">
@@ -259,280 +235,190 @@
     </footer>
 
     <script>
-        // Global variables
-        let throughputChart, fairnessChart, packetLossChart;
-        
-        // Traffic label mapping
-        const trafficLabels = { 1: 'Very Low', 2: 'Low', 3: 'Medium', 4: 'High', 5: 'Very High' };
+document.addEventListener('DOMContentLoaded', () => {
+    let rlChart;
 
-        // DOM Elements
-        const lteSlider = document.getElementById('lte-agents');
-        const lteValue = document.getElementById('lte-agents-value');
-        const wifiSlider = document.getElementById('wifi-aps');
-        const wifiValue = document.getElementById('wifi-aps-value');
-        const trafficSlider = document.getElementById('traffic-load');
-        const trafficValue = document.getElementById('traffic-load-value');
-        const runButton = document.getElementById('run-simulation');
-        const algorithmSelect = document.getElementById('coexistence-algorithm');
-        const resultsPlaceholder = document.getElementById('results-placeholder');
-        const resultsContainer = document.getElementById('results-container');
-        const rlPanel = document.getElementById('rl-panel');
-        const dutyEl = document.getElementById('rl-duty');
-        const rewardEl = document.getElementById('rl-reward');
+    const lteSlider = document.getElementById('lte-agents');
+    const lteValue = document.getElementById('lte-agents-value');
 
-        // Initialize sliders
-        lteSlider.addEventListener('input', () => lteValue.textContent = lteSlider.value);
-        wifiSlider.addEventListener('input', () => wifiValue.textContent = wifiSlider.value);
-        trafficSlider.addEventListener('input', () => trafficValue.textContent = trafficLabels[trafficSlider.value]);
+    const wifiSlider = document.getElementById('wifi-aps');
+    const wifiValue = document.getElementById('wifi-aps-value');
 
-        // Chart options
-        const chartOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
+    const trafficSlider = document.getElementById('traffic-load');
+    const trafficValue = document.getElementById('traffic-load-value');
+
+    const runButton = document.getElementById('run-simulation');
+    const algorithmSelect = document.getElementById('coexistence-algorithm');
+
+    const resultsPlaceholder = document.getElementById('results-placeholder');
+    const resultsContainer = document.getElementById('results-container');
+
+    const trafficLabels = { 1: 'Very Low', 2: 'Low', 3: 'Medium', 4: 'High', 5: 'Very High' };
+
+    lteSlider.addEventListener('input', () => lteValue.textContent = lteSlider.value);
+    wifiSlider.addEventListener('input', () => wifiValue.textContent = wifiSlider.value);
+    trafficSlider.addEventListener('input', () => trafficValue.textContent = trafficLabels[trafficSlider.value]);
+
+    let throughputChart, fairnessChart, packetLossChart;
+
+    const chartOptions = () => ({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top' }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    });
+
+    function initializeCharts() {
+        throughputChart = new Chart(document.getElementById('throughputChart'), {
+            type: 'bar',
+            data: {
+                labels: ['LTE-U', 'WiFi', 'Total'],
+                datasets: []
             },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        };
-
-        // Initialize charts
-        function initializeCharts() {
-            const throughputCtx = document.getElementById('throughputChart').getContext('2d');
-            throughputChart = new Chart(throughputCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['LTE-U', 'WiFi', 'Total'],
-                    datasets: []
-                },
-                options: chartOptions
-            });
-
-            const fairnessCtx = document.getElementById('fairnessChart').getContext('2d');
-            fairnessChart = new Chart(fairnessCtx, {
-                type: 'bar',
-                data: {
-                    labels: ["Jain's Fairness Index"],
-                    datasets: []
-                },
-                options: {
-                    ...chartOptions,
-                    scales: { y: { beginAtZero: true, max: 1 } }
-                }
-            });
-
-            const packetLossCtx = document.getElementById('packetLossChart').getContext('2d');
-            packetLossChart = new Chart(packetLossCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['LTE-U', 'WiFi'],
-                    datasets: []
-                },
-                options: {
-                    ...chartOptions,
-                    scales: { y: { beginAtZero: true, max: 100 } }
-                }
-            });
-        }
-
-        // Update charts with data
-        function updateCharts(data) {
-            const { throughput, fairness, packetLoss } = data;
-            
-            throughputChart.data.datasets = [{
-                label: 'Throughput (Mbps)',
-                data: throughput,
-                backgroundColor: ['#0f766e', '#14b8a6', '#64748b'],
-            }];
-            throughputChart.update();
-
-            fairnessChart.data.datasets = [{
-                label: 'Fairness Index',
-                data: fairness,
-                backgroundColor: ['#0d9488'],
-            }];
-            fairnessChart.update();
-
-            packetLossChart.data.datasets = [{
-                label: 'Packet Loss (%)',
-                data: packetLoss,
-                backgroundColor: ['#0f766e', '#14b8a6'],
-            }];
-            packetLossChart.update();
-        }
-
-        // Call backend API to run simulation
-        async function runSimulation(settings) {
-            try {
-                const response = await fetch('/api/run/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        lte_agents: settings.lte,
-                        wifi_aps: settings.wifi,
-                        traffic: settings.traffic,
-                        algorithm: settings.algorithm
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('Error running simulation:', error);
-                // Return mock data as fallback
-                return {
-                    throughput: [0, 0, 0],
-                    fairness: [0],
-                    packetLoss: [0, 0],
-                    rl: null
-                };
-            }
-        }
-
-        // Load simulation history from backend
-        async function loadHistory() {
-            try {
-                const response = await fetch('/api/history/');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-
-                const table = document.getElementById('history-table');
-                table.innerHTML = '';
-
-                if (data.length === 0) {
-                    table.innerHTML = '<tr><td colspan="6" class="text-center py-4">No simulations run yet</td></tr>';
-                    return;
-                }
-
-                data.forEach(run => {
-                    const row = `
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 border">${run.lte_agents}</td>
-                            <td class="px-4 py-2 border">${run.wifi_aps}</td>
-                            <td class="px-4 py-2 border">${run.algorithm}</td>
-                            <td class="px-4 py-2 border text-right">${run.throughput_total.toFixed(2)}</td>
-                            <td class="px-4 py-2 border text-right">${run.fairness.toFixed(3)}</td>
-                            <td class="px-4 py-2 border">${new Date(run.created_at).toLocaleString()}</td>
-                        </tr>
-                    `;
-                    table.innerHTML += row;
-                });
-            } catch (error) {
-                console.error('Error loading history:', error);
-                const table = document.getElementById('history-table');
-                table.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">Error loading history</td></tr>';
-            }
-        }
-
-        // Download chart as PNG
-        function downloadChart(chartId) {
-            const canvas = document.getElementById(chartId);
-            const now = new Date().toISOString().replace(/[:.]/g, '-');
-            const link = document.createElement('a');
-            link.download = `${chartId}_${now}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        }
-
-        // Make downloadChart available globally
-        window.downloadChart = downloadChart;
-
-        // Navigation and scroll handling
-        const sections = document.querySelectorAll('section');
-        const navLinks = document.querySelectorAll('.nav-link');
-
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.4
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    navLinks.forEach(link => {
-                        link.classList.remove('active');
-                        if (link.getAttribute('href').substring(1) === entry.target.id) {
-                            link.classList.add('active');
-                        }
-                    });
-                }
-            });
-        }, observerOptions);
-
-        sections.forEach(section => {
-            observer.observe(section);
-        });
-        
-        navLinks.forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
+            options: chartOptions()
         });
 
-        // Main run button click handler
-        runButton.addEventListener('click', async () => {
-            const settings = {
-                lte: parseInt(lteSlider.value),
-                wifi: parseInt(wifiSlider.value),
-                traffic: parseInt(trafficSlider.value),
-                algorithm: algorithmSelect.value
-            };
-            
-            // Initialize charts if not already done
-            if (!throughputChart) {
-                initializeCharts();
+        fairnessChart = new Chart(document.getElementById('fairnessChart'), {
+            type: 'bar',
+            data: {
+                labels: ["Jain's Fairness Index"],
+                datasets: []
+            },
+            options: {
+                ...chartOptions(),
+                scales: { y: { beginAtZero: true, max: 1 } }
             }
+        });
 
-            // Show results container
-            resultsPlaceholder.classList.add('hidden');
-            resultsContainer.classList.remove('hidden');
-            
-            // Run simulation
+        packetLossChart = new Chart(document.getElementById('packetLossChart'), {
+            type: 'bar',
+            data: {
+                labels: ['LTE-U', 'WiFi'],
+                datasets: []
+            },
+            options: {
+                ...chartOptions(),
+                scales: { y: { beginAtZero: true, max: 100 } }
+            }
+        });
+    }
+
+    // 🔥 API CALL FUNCTION (CORRECT)
+    async function runSimulation(settings) {
+        const response = await fetch('/api/simulation/run/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lte_agents: settings.lte,
+                wifi_aps: settings.wifi,
+                traffic: settings.traffic,
+                algorithm: settings.algorithm
+            })
+        });
+
+        return await response.json();
+    }
+
+    function updateCharts(data) {
+        const { throughput, fairness, packet_loss } = data;
+
+        throughputChart.data.datasets = [{
+            label: 'Throughput (Mbps)',
+            data: throughput,
+            backgroundColor: ['#0f766e', '#14b8a6', '#64748b'],
+        }];
+        throughputChart.update();
+
+        fairnessChart.data.datasets = [{
+            label: 'Fairness Index',
+            data: fairness,
+            backgroundColor: ['#0d9488'],
+        }];
+        fairnessChart.update();
+
+        packetLossChart.data.datasets = [{
+            label: 'Packet Loss (%)',
+            data: packet_loss,
+            backgroundColor: ['#0f766e', '#14b8a6'],
+        }];
+        packetLossChart.update();
+
+        rlChart = new Chart(document.getElementById('rlChart'), {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Reward',
+                data: [],
+                tension: 0.3
+            }]
+        },
+        options: chartOptions()
+    });
+
+        if (data.rl && data.rl.history) {
+            rlChart.data.labels = data.rl.history.map((_, i) => i + 1);
+            rlChart.data.datasets[0].data = data.rl.history;
+            rlChart.update();
+        }
+    }
+
+    // 🔥 SINGLE CLEAN CLICK HANDLER
+    runButton.addEventListener('click', async () => {
+
+        const settings = {
+            lte: parseInt(lteSlider.value),
+            wifi: parseInt(wifiSlider.value),
+            traffic: parseInt(trafficSlider.value),
+            algorithm: algorithmSelect.value
+        };
+
+        if (!throughputChart) {
+            initializeCharts();
+        }
+
+        resultsPlaceholder.classList.add('hidden');
+        resultsContainer.classList.remove('hidden');
+
+        try {
             const data = await runSimulation(settings);
-            
-            // Update charts with results
-            updateCharts(data);
-            
-            // Update RL panel if data contains RL info
-            if (data.rl) {
-                rlPanel.classList.remove('hidden');
-                dutyEl.textContent = data.rl.duty_cycle.toFixed(2);
-                rewardEl.textContent = data.rl.reward.toFixed(2);
-            } else {
-                rlPanel.classList.add('hidden');
-            }
-            
-            // Reload history table
-            await loadHistory();
-            
-            // Scroll to analysis section
-            document.getElementById('analysis').scrollIntoView({ behavior: 'smooth' });
-        });
 
-        // Load history on page load
-        loadHistory();
-        
-        // Set initial slider values display
-        lteValue.textContent = lteSlider.value;
-        wifiValue.textContent = wifiSlider.value;
-        trafficValue.textContent = trafficLabels[trafficSlider.value];
-    </script>
+            console.log("API Response:", data); // 🔍 DEBUG
+
+            updateCharts(data);
+
+            document.getElementById('analysis')
+                .scrollIntoView({ behavior: 'smooth' });
+
+        } catch (error) {
+            console.error("Simulation error:", error);
+        }
+    });
+
+});
+
+rlChart = new Chart(document.getElementById('rlChart'), {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'Reward',
+            data: [],
+            fill: false,
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+</script>
 </body>
 </html>

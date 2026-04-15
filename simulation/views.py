@@ -14,9 +14,9 @@ def simulation_history(request):
     return JsonResponse(data, safe=False)
 # later we import your simulation here
 
-@csrf_exempt
+"""@csrf_exempt
 def run_simulation(request):
-    """API endpoint to run simulation"""
+    #API endpoint to run simulation
     
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=400)
@@ -56,6 +56,34 @@ def run_simulation(request):
         results['rl']['history'] = results['rl']['history']
     
     return JsonResponse(results)
+"""
+
+
+@csrf_exempt
+def run_simulation(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+
+            lte_agents = data.get('lte_agents')
+            wifi_aps = data.get('wifi_aps')
+            traffic = data.get('traffic')
+            algorithm = data.get('algorithm')
+
+            # 🔥 THIS is where real simulation will go
+            results = run_real_simulation(
+                lte_agents,
+                wifi_aps,
+                traffic,
+                algorithm
+            )
+
+            return JsonResponse(results, safe=False)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def dashboard(request):
     return render(request, 'simulation/dashboard.html')
