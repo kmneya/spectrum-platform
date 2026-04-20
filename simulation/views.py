@@ -1,89 +1,65 @@
+# simulation/views.py
 import json
+import logging
+import numpy as np
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
 from .engine import run_real_simulation
 from .models import SimulationRun
-from django.core.serializers import serialize
-from django.shortcuts import render
 
+logger = logging.getLogger(__name__)
+
+def dashboard(request):
+    return render(request, 'simulation/dashboard.html')
 
 def simulation_history(request):
-    """API endpoint to get simulation history"""
     runs = SimulationRun.objects.all().order_by('-created_at')[:50]
     data = list(runs.values())
     return JsonResponse(data, safe=False)
-# later we import your simulation here
 
-"""@csrf_exempt
+@csrf_exempt
 def run_simulation(request):
-    #API endpoint to run simulation
-    
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=400)
-    
+
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    
-    # Extract parameters
-    lte_agents = data.get('lte_agents', 0)
-    wifi_aps = data.get('wifi_aps', 0)
-    traffic = data.get('traffic', 3)
+
+    # Extract parameters with defaults
+    lte_agents = int(data.get('lte_agents', 3))
+    wifi_aps = int(data.get('wifi_aps', 5))
+    traffic = int(data.get('traffic', 3))
     algorithm = data.get('algorithm', 'madrl')
-    
-    # Run simulation
-    results = run_real_simulation(lte_agents, wifi_aps, traffic, algorithm)
-    
-    # Save to database
-    simulation_run = SimulationRun.objects.create(
-        lte_agents=lte_agents,
-        wifi_aps=wifi_aps,
-        traffic=traffic,
-        algorithm=algorithm,
-        throughput_lte=results['throughput'][0],
-        throughput_wifi=results['throughput'][1],
-        throughput_total=results['throughput'][2],
-        fairness=results['fairness'][0],
-        packet_loss_lte=results['packet_loss'][0],
-        packet_loss_wifi=results['packet_loss'][1],
-        duty_cycle=results['rl']['duty_cycle'] if results.get('rl') else None,
-        reward=results['rl']['reward'] if results.get('rl') else None,
-    )
-    
-    # Add history to response for RL
-    if results.get('rl') and results['rl'].get('history'):
-        results['rl']['history'] = results['rl']['history']
-    
-    return JsonResponse(results)
-"""
 
+    try:
+        results = run_real_simulation(lte_agents, wifi_aps, traffic, algorithm)
+    except Exception as e:
+        logger.exception("Simulation engine error")
+        return JsonResponse({'error': f'Simulation failed: {str(e)}'}, status=500)
 
-@csrf_exempt
-def run_simulation(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
+    # Save to database (safe average for packet loss)
+    try:
+        lte_packet_loss_avg = np.mean(results['packet_loss']['lte']) if results['packet_loss']['lte'] else 0.0
+        wifi_packet_loss = results['packet_loss']['wifi']
 
-            lte_agents = data.get('lte_agents')
-            wifi_aps = data.get('wifi_aps')
-            traffic = data.get('traffic')
-            algorithm = data.get('algorithm')
+        SimulationRun.objects.create(
+            lte_agents=lte_agents,
+            wifi_aps=wifi_aps,
+            traffic=traffic,
+            algorithm=algorithm,
+            throughput_lte=sum(results['throughput']['lte']),
+            throughput_wifi=results['throughput']['wifi'],
+            throughput_total=results['throughput']['total'],
+            fairness=results['fairness'],
+            packet_loss_lte=round(lte_packet_loss_avg, 2),
+            packet_loss_wifi=round(wifi_packet_loss, 2),
+            duty_cycle=np.mean(results['rl']['duty_cycles']) if results['rl']['duty_cycles'] else 0.0,
+            reward=results['rl']['reward']
+        )
+    except Exception as e:
+        logger.warning("Failed to save simulation run: %s", e)
 
-            # 🔥 THIS is where real simulation will go
-            results = run_real_simulation(
-                lte_agents,
-                wifi_aps,
-                traffic,
-                algorithm
-            )
-
-            return JsonResponse(results, safe=False)
-
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-
-    return JsonResponse({'error': 'Invalid request'}, status=400)
-
-def dashboard(request):
-    return render(request, 'simulation/dashboard.html')
+    return JsonResponse(results, safe=False)

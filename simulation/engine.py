@@ -1,103 +1,145 @@
+# simulation/engine.py
 import random
-from .rl_agent import (
-    load_q_table,
-    save_q_table,
-    get_state,
-    choose_action,
-    update_q_table
-)
+import numpy as np
 
-reward_history = []
+# Import the MADDPG implementation
+try:
+    from .maddpg_agent import MADDPG
+except ImportError:
+    # Fallback for testing if file not yet created
+    MADDPG = None
+
+# Global MADDPG instance
+maddpg = None
+
+def init_maddpg(num_agents, state_dim=3, action_dim=1):
+    global maddpg
+    if MADDPG is not None:
+        maddpg = MADDPG(num_agents, state_dim, action_dim)
 
 def run_real_simulation(lte_agents, wifi_aps, traffic, algorithm):
+    global maddpg
 
-    lte_capacity = 10
-    wifi_capacity = 8
+    # ---------------------------
+    # Input validation
+    # ---------------------------
+    lte_agents = max(0, int(lte_agents))
+    wifi_aps = max(0, int(wifi_aps))
+    traffic = max(1, min(5, int(traffic)))
 
-    base_lte = lte_agents * lte_capacity
-    base_wifi = wifi_aps * wifi_capacity
-
-    traffic_factor = 1 + (traffic * 0.2)
-
-    # -----------------------------
-    # RL LOGIC
-    # -----------------------------
-    duty_cycle = 0.5
-
+    # ---------------------------
+    # 1. Initialize or load MADDPG if needed
+    # ---------------------------
     if algorithm == "madrl":
-        q_table = load_q_table()
+        if maddpg is None or maddpg.num_agents != lte_agents:
+            if lte_agents > 0:
+                init_maddpg(lte_agents, state_dim=3, action_dim=1)
+            else:
+                maddpg = None
 
-        state = get_state(lte_agents, wifi_aps, traffic)
+    # ---------------------------
+    # 2. Prepare observations for each LTE agent
+    # ---------------------------
+    observations = []
+    for i in range(lte_agents):
+        obs = [
+            traffic / 10.0,
+            0.5,
+            wifi_aps / max(1, lte_agents + wifi_aps)
+        ]
+        observations.append(obs)
 
-        duty_cycle = choose_action(state, q_table)
-
+    # ---------------------------
+    # 3. Get actions (duty cycles)
+    # ---------------------------
+    if algorithm == "madrl" and lte_agents > 0 and maddpg is not None:
+        duty_cycles = maddpg.act(observations, noise=0.05).flatten().tolist()
     elif algorithm == "duty_cycle":
-        duty_cycle = 0.5
+        duty_cycles = [0.5] * lte_agents
+    else:  # no_algorithm
+        duty_cycles = [0.9] * lte_agents
 
-    elif algorithm == "no_algorithm":
-        duty_cycle = 0.9
+   # ---------------------------
+    # 4. Simulate throughput & fairness
+    # ---------------------------
+    lte_rate_per_agent = 20.0   # Mbps max
+    wifi_rate_per_ap = 15.0     # Mbps max
 
-    # -----------------------------
-    # THROUGHPUT
-    # -----------------------------
+    avg_lte_duty = np.mean(duty_cycles) if duty_cycles else 0.0
+    wifi_airtime = max(0.0, 1.0 - avg_lte_duty * lte_agents * 0.15)
 
-    throughput_lte = base_lte * duty_cycle * traffic_factor
-    throughput_wifi = base_wifi * (1 - duty_cycle) * traffic_factor
+    throughput_lte = []
+    for dc in duty_cycles:
+        t = lte_rate_per_agent * dc * (1 + 0.1 * traffic)
+        throughput_lte.append(t + np.random.uniform(-1, 2))
 
-    # Add noise
-    throughput_lte += random.uniform(0, 5)
-    throughput_wifi += random.uniform(0, 5)
+    throughput_wifi = wifi_rate_per_ap * wifi_aps * wifi_airtime * (1 + 0.05 * traffic)
+    throughput_wifi = max(0, throughput_wifi + np.random.uniform(-2, 3))
 
-    total = throughput_lte + throughput_wifi
+    total_lte = sum(throughput_lte)
+    total = total_lte + throughput_wifi
 
-    # -----------------------------
-    # FAIRNESS (JAIN)
-    # -----------------------------
+    # Jain's Fairness Index between LTE and WiFi
+    # Special case: if only one technology is present, fairness = 1.0
+    if lte_agents == 0:
+        fairness = 1.0
+    elif wifi_aps == 0:
+        fairness = 1.0
+    else:
+        sum_x = total_lte + throughput_wifi
+        sum_sq = total_lte**2 + throughput_wifi**2
+        if sum_sq > 0:
+            fairness = (sum_x ** 2) / (2 * sum_sq)
+        else:
+            fairness = 0.0
 
-    denominator = 2 * (throughput_lte**2 + throughput_wifi**2)
-    fairness = (total ** 2) / denominator if denominator != 0 else 0
+    # Reward: fairness-focused
+    reward = fairness * 100 + total * 0.1
 
-    # -----------------------------
-    # REWARD FUNCTION (CRITICAL)
-    # -----------------------------
+    # ---------------------------
+    # 5. Store transition and update MADDPG
+    # ---------------------------
+    if algorithm == "madrl" and lte_agents > 0 and maddpg is not None:
+        next_obs = observations  # static scenario
+        dones = [False] * lte_agents
+        rewards_per_agent = [reward] * lte_agents
 
-    reward = total * 0.6 + fairness * 100
+        maddpg.store_transition(
+            np.array(observations),
+            np.array(duty_cycles).reshape(lte_agents, 1),
+            np.array(rewards_per_agent),
+            np.array(next_obs),
+            np.array(dones)
+        )
+        maddpg.update()
 
-    reward_history.append(float(reward))
+    # ---------------------------
+    # 6. Packet loss
+    # ---------------------------
+    packet_loss_lte = []
+    for dc in duty_cycles:
+        pl = np.random.uniform(1, 8) * (1 - dc)
+        packet_loss_lte.append(round(pl, 2))
 
-    # Keep last 30 points
-    if len(reward_history) > 30:
-        reward_history.pop(0)
+    packet_loss_wifi = np.random.uniform(3, 12) * (1 - wifi_airtime)
+    packet_loss_wifi = round(packet_loss_wifi, 2)
 
-    # -----------------------------
-    # UPDATE RL
-    # -----------------------------
-
-    if algorithm == "madrl":
-        update_q_table(q_table, state, duty_cycle, reward)
-        save_q_table(q_table)
-
-    # -----------------------------
-    # PACKET LOSS
-    # -----------------------------
-
-    packet_loss_lte = random.uniform(1, 10)
-    packet_loss_wifi = random.uniform(5, 15) * (1 - duty_cycle)
-
+    # ---------------------------
+    # 7. Build response
+    # ---------------------------
     return {
-        "throughput": [
-            round(throughput_lte, 2),
-            round(throughput_wifi, 2),
-            round(total, 2)
-        ],
-        "fairness": [round(fairness, 3)],
-        "packet_loss": [
-            round(packet_loss_lte, 2),
-            round(packet_loss_wifi, 2)
-        ],
+        "throughput": {
+            "lte": [round(t, 2) for t in throughput_lte],
+            "wifi": round(throughput_wifi, 2),
+            "total": round(total, 2)
+        },
+        "fairness": round(fairness, 3),
+        "packet_loss": {
+            "lte": packet_loss_lte,
+            "wifi": packet_loss_wifi
+        },
         "rl": {
-            "duty_cycle": round(duty_cycle, 2),
-            "reward": round(reward, 2),
-            "history": reward_history
+            "duty_cycles": [round(dc, 2) for dc in duty_cycles],
+            "reward": round(reward, 2)
         }
     }

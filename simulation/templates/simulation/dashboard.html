@@ -9,14 +9,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Tech Slate and Teal -->
-    <!-- Application Structure Plan: The application is designed as a single-page, multi-section interactive dashboard. The structure follows a logical, task-oriented flow: 1. Introduction (Problem Context), 2. Framework Explorer (Solution Architecture), 3. Interactive Simulation (User Engagement & Parameterization), and 4. Performance Analysis (Results & Comparison). This structure was chosen over a linear report format to guide the user from understanding the core challenge of LTE-U/WiFi coexistence to actively exploring the MADRL solution and immediately seeing its simulated impact on key performance indicators. This facilitates a deeper, more intuitive understanding of the framework's value. -->
-    <!-- Visualization & Content Choices: 
-        - Coexistence Problem (Intro): Report Info -> Core challenge of spectrum sharing. Goal -> Inform. Viz/Presentation -> Thematic cards with icons. Interaction -> Static. Justification -> Quickly conveys the fundamental conflict without complexity. Library/Method -> HTML/Tailwind.
-        - MADRL Framework Diagram (Framework Explorer): Report Info -> Components of the reinforcement learning model. Goal -> Organize/Explain. Viz/Presentation -> A flowchart-style diagram. Interaction -> Static visual reference. Justification -> Visually breaks down the complex MADRL loop into understandable parts (Environment, Agent, State, Action, Reward) using only HTML/CSS, adhering to the no-SVG constraint. Library/Method -> HTML/Tailwind (Flexbox/Grid).
-        - Simulation Controls (Interactive Simulation): Report Info -> Variables affecting network performance. Goal -> Interact/Explore. Viz/Presentation -> Sliders and dropdowns for user input. Interaction -> User-configurable parameters. Justification -> Empowers the user to create 'what-if' scenarios, making the framework a hands-on investigative tool. Library/Method -> HTML Forms.
-        - Performance Metrics (Performance Analysis): Report Info -> Quantitative results of different coexistence methods. Goal -> Compare/Analyze. Viz/Presentation -> Dynamic bar and line charts. Interaction -> Charts update based on simulation parameters. Justification -> Chart.js provides a clear, quantitative comparison of outcomes (Throughput, Fairness, Packet Loss), proving the efficacy of the MADRL approach. Library/Method -> Chart.js/Canvas. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -69,6 +61,7 @@
     </header>
 
     <main>
+        <!-- Introduction Section -->
         <section id="introduction" class="py-16 md:py-24 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">Investigating LTE-U & WiFi Coexistence</h1>
@@ -97,6 +90,7 @@
             </div>
         </section>
 
+        <!-- Framework Section -->
         <section id="framework" class="py-16 md:py-24">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
@@ -143,6 +137,7 @@
             </div>
         </section>
         
+        <!-- Simulation Controls Section -->
         <section id="simulation" class="py-16 md:py-24 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="lg:text-center">
@@ -180,10 +175,14 @@
                             </button>
                         </div>
                     </div>
+                    <div class="mt-4 text-right">
+                        <button id="reset-learning" class="text-sm text-teal-600 hover:text-teal-800 underline">Reset Learning Curve</button>
+                    </div>
                 </div>
             </div>
         </section>
 
+        <!-- Analysis Section -->
         <section id="analysis" class="py-16 md:py-24">
              <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="lg:text-center">
@@ -208,24 +207,21 @@
                             <canvas id="fairnessChart"></canvas>
                         </div>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 lg:col-span-2">
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
                          <h3 class="text-lg font-semibold text-center text-slate-800">Packet Loss Rate (%)</h3>
                          <div class="chart-container">
                             <canvas id="packetLossChart"></canvas>
                         </div>
                     </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                        <h3 class="text-lg font-semibold text-center text-slate-800">RL Learning Curve (Reward)</h3>
+                        <div class="chart-container">
+                            <canvas id="rlChart"></canvas>
+                        </div>
+                    </div>
                 </div>
              </div>
-             <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 lg:col-span-2">
-                <h3 class="text-lg font-semibold text-center text-slate-800">
-                    RL Learning Curve
-                </h3>
-                <div class="chart-container">
-                    <canvas id="rlChart"></canvas>
-                </div>
-            </div>
         </section>
-
     </main>
 
     <footer class="bg-slate-800 text-white">
@@ -236,84 +232,120 @@
 
     <script>
 document.addEventListener('DOMContentLoaded', () => {
-    let rlChart;
-
+    // DOM elements
     const lteSlider = document.getElementById('lte-agents');
     const lteValue = document.getElementById('lte-agents-value');
-
     const wifiSlider = document.getElementById('wifi-aps');
     const wifiValue = document.getElementById('wifi-aps-value');
-
     const trafficSlider = document.getElementById('traffic-load');
     const trafficValue = document.getElementById('traffic-load-value');
-
     const runButton = document.getElementById('run-simulation');
+    const resetLearningBtn = document.getElementById('reset-learning');
     const algorithmSelect = document.getElementById('coexistence-algorithm');
-
     const resultsPlaceholder = document.getElementById('results-placeholder');
     const resultsContainer = document.getElementById('results-container');
 
     const trafficLabels = { 1: 'Very Low', 2: 'Low', 3: 'Medium', 4: 'High', 5: 'Very High' };
 
+    // Update slider displays
     lteSlider.addEventListener('input', () => lteValue.textContent = lteSlider.value);
     wifiSlider.addEventListener('input', () => wifiValue.textContent = wifiSlider.value);
     trafficSlider.addEventListener('input', () => trafficValue.textContent = trafficLabels[trafficSlider.value]);
 
-    let throughputChart, fairnessChart, packetLossChart;
+    // Chart instances
+    let throughputChart, fairnessChart, packetLossChart, rlChart;
 
-    const chartOptions = () => ({
+    // Learning curve history storage (persists across runs)
+    let rewardHistory = [];
+
+    // Chart options factory
+    const chartOptions = (maxY = null) => ({
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
             legend: { position: 'top' }
         },
         scales: {
-            y: { beginAtZero: true }
+            y: { 
+                beginAtZero: true,
+                ...(maxY && { max: maxY })
+            }
         }
     });
 
+    // Initialize all charts
     function initializeCharts() {
+        // Throughput chart
         throughputChart = new Chart(document.getElementById('throughputChart'), {
             type: 'bar',
             data: {
-                labels: ['LTE-U', 'WiFi', 'Total'],
-                datasets: []
+                labels: ['LTE-U (total)', 'WiFi', 'Total'],
+                datasets: [{
+                    label: 'Throughput (Mbps)',
+                    data: [0, 0, 0],
+                    backgroundColor: ['#0f766e', '#14b8a6', '#64748b'],
+                }]
             },
             options: chartOptions()
         });
 
+        // Fairness chart
         fairnessChart = new Chart(document.getElementById('fairnessChart'), {
             type: 'bar',
             data: {
                 labels: ["Jain's Fairness Index"],
-                datasets: []
+                datasets: [{
+                    label: 'Fairness Index',
+                    data: [0],
+                    backgroundColor: ['#0d9488'],
+                }]
             },
-            options: {
-                ...chartOptions(),
-                scales: { y: { beginAtZero: true, max: 1 } }
-            }
+            options: chartOptions(1)
         });
 
+        // Packet loss chart
         packetLossChart = new Chart(document.getElementById('packetLossChart'), {
             type: 'bar',
             data: {
-                labels: ['LTE-U', 'WiFi'],
-                datasets: []
+                labels: ['LTE-U (avg)', 'WiFi'],
+                datasets: [{
+                    label: 'Packet Loss (%)',
+                    data: [0, 0],
+                    backgroundColor: ['#0f766e', '#14b8a6'],
+                }]
+            },
+            options: chartOptions(100)
+        });
+
+        // RL learning curve chart
+        rlChart = new Chart(document.getElementById('rlChart'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Reward',
+                    data: [],
+                    borderColor: '#0d9488',
+                    backgroundColor: 'rgba(13, 148, 136, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
             },
             options: {
                 ...chartOptions(),
-                scales: { y: { beginAtZero: true, max: 100 } }
+                scales: {
+                    x: { title: { display: true, text: 'Simulation Run' } },
+                    y: { title: { display: true, text: 'Reward' } }
+                }
             }
         });
     }
 
-    // 🔥 API CALL FUNCTION (CORRECT)
+    // API call
     async function runSimulation(settings) {
         const response = await fetch('/api/simulation/run/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 lte_agents: settings.lte,
                 wifi_aps: settings.wifi,
@@ -321,57 +353,79 @@ document.addEventListener('DOMContentLoaded', () => {
                 algorithm: settings.algorithm
             })
         });
-
+        if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}`);
+        }
         return await response.json();
     }
 
+    // Update charts with new simulation data
     function updateCharts(data) {
-        const { throughput, fairness, packet_loss } = data;
+        // Extract values (handling multi-agent format)
+        let lteThroughputTotal = 0;
+        if (Array.isArray(data.throughput.lte)) {
+            lteThroughputTotal = data.throughput.lte.reduce((sum, val) => sum + val, 0);
+        } else {
+            lteThroughputTotal = data.throughput.lte || 0;
+        }
+        const wifiThroughput = data.throughput.wifi || 0;
+        const totalThroughput = data.throughput.total || (lteThroughputTotal + wifiThroughput);
+        
+        const fairness = data.fairness || 0;
+        
+        let ltePacketLossAvg = 0;
+        if (Array.isArray(data.packet_loss.lte)) {
+            ltePacketLossAvg = data.packet_loss.lte.reduce((sum, val) => sum + val, 0) / data.packet_loss.lte.length;
+        } else {
+            ltePacketLossAvg = data.packet_loss.lte || 0;
+        }
+        const wifiPacketLoss = data.packet_loss.wifi || 0;
 
-        throughputChart.data.datasets = [{
-            label: 'Throughput (Mbps)',
-            data: throughput,
-            backgroundColor: ['#0f766e', '#14b8a6', '#64748b'],
-        }];
+        // Update throughput chart
+        throughputChart.data.datasets[0].data = [
+            Math.round(lteThroughputTotal * 100) / 100,
+            Math.round(wifiThroughput * 100) / 100,
+            Math.round(totalThroughput * 100) / 100
+        ];
         throughputChart.update();
 
-        fairnessChart.data.datasets = [{
-            label: 'Fairness Index',
-            data: fairness,
-            backgroundColor: ['#0d9488'],
-        }];
+        // Update fairness chart
+        fairnessChart.data.datasets[0].data = [Math.round(fairness * 1000) / 1000];
         fairnessChart.update();
 
-        packetLossChart.data.datasets = [{
-            label: 'Packet Loss (%)',
-            data: packet_loss,
-            backgroundColor: ['#0f766e', '#14b8a6'],
-        }];
+        // Update packet loss chart
+        packetLossChart.data.datasets[0].data = [
+            Math.round(ltePacketLossAvg * 100) / 100,
+            Math.round(wifiPacketLoss * 100) / 100
+        ];
         packetLossChart.update();
 
-        rlChart = new Chart(document.getElementById('rlChart'), {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Reward',
-                data: [],
-                tension: 0.3
-            }]
-        },
-        options: chartOptions()
-    });
-
-        if (data.rl && data.rl.history) {
-            rlChart.data.labels = data.rl.history.map((_, i) => i + 1);
-            rlChart.data.datasets[0].data = data.rl.history;
+        // Handle RL reward and history
+        if (data.rl && typeof data.rl.reward === 'number') {
+            const reward = data.rl.reward;
+            rewardHistory.push(reward);
+            // Keep last 50 runs for clarity
+            if (rewardHistory.length > 50) rewardHistory.shift();
+            
+            // Update RL chart
+            rlChart.data.labels = rewardHistory.map((_, i) => i + 1);
+            rlChart.data.datasets[0].data = rewardHistory;
             rlChart.update();
         }
     }
 
-    // 🔥 SINGLE CLEAN CLICK HANDLER
-    runButton.addEventListener('click', async () => {
+    // Reset learning curve
+    function resetLearningCurve() {
+        rewardHistory = [];
+        if (rlChart) {
+            rlChart.data.labels = [];
+            rlChart.data.datasets[0].data = [];
+            rlChart.update();
+        }
+    }
 
+    // Main simulation run handler
+    runButton.addEventListener('click', async () => {
         const settings = {
             lte: parseInt(lteSlider.value),
             wifi: parseInt(wifiSlider.value),
@@ -379,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
             algorithm: algorithmSelect.value
         };
 
+        // Initialize charts on first run
         if (!throughputChart) {
             initializeCharts();
         }
@@ -388,37 +443,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const data = await runSimulation(settings);
-
-            console.log("API Response:", data); // 🔍 DEBUG
-
+            console.log("Simulation response:", data);
             updateCharts(data);
-
-            document.getElementById('analysis')
-                .scrollIntoView({ behavior: 'smooth' });
-
+            
+            // Smooth scroll to analysis
+            document.getElementById('analysis').scrollIntoView({ behavior: 'smooth' });
         } catch (error) {
             console.error("Simulation error:", error);
+            alert("Simulation failed. Check console for details.");
         }
     });
 
-});
-
-rlChart = new Chart(document.getElementById('rlChart'), {
-    type: 'line',
-    data: {
-        labels: [],
-        datasets: [{
-            label: 'Reward',
-            data: [],
-            fill: false,
-            tension: 0.3
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false
+    // Reset learning curve button
+    if (resetLearningBtn) {
+        resetLearningBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            resetLearningCurve();
+        });
     }
+
+    // Initialize charts immediately so they are ready (empty)
+    initializeCharts();
 });
-</script>
+    </script>
 </body>
 </html>
