@@ -10,34 +10,35 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 320px;
-            max-height: 400px;
+            position: relative; width: 100%;
+            height: 300px; max-height: 360px;
         }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 350px;
-            }
+        @media (min-width: 768px) { .chart-container { height: 320px; } }
+        .chart-container-wide { height: 260px; }
+        .nav-link { transition: color 0.3s, border-bottom-color 0.3s; }
+        .nav-link.active { color: #0d9488; border-bottom-color: #0d9488; }
+        .nav-link:not(.active) { border-bottom-color: transparent; }
+
+        /* Traffic zone strip */
+        .zone-strip {
+            height: 6px; border-radius: 3px;
+            background: linear-gradient(
+                to right,
+                #16a34a 0%, #16a34a 10%,
+                #2563eb 10%, #2563eb 18%,
+                #ea580c 18%, #ea580c 100%
+            );
         }
-        .nav-link {
-            transition: color 0.3s, border-bottom-color 0.3s;
+        .category-badge {
+            display: inline-flex; align-items: center;
+            padding: 2px 10px; border-radius: 9999px;
+            font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em;
         }
-        .nav-link.active {
-            color: #0d9488;
-            border-bottom-color: #0d9488;
-        }
-        .nav-link:not(.active) {
-            border-bottom-color: transparent;
-        }
+        .badge-residential { background: #dcfce7; color: #166534; }
+        .badge-office      { background: #dbeafe; color: #1e40af; }
+        .badge-urban       { background: #ffedd5; color: #9a3412; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -45,88 +46,76 @@
     <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-slate-200">
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center">
-                    <span class="font-bold text-xl text-teal-700">MADRL Framework</span>
-                </div>
-                <div class="hidden md:block">
-                    <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="#introduction" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-teal-600 border-b-2">Introduction</a>
-                        <a href="#framework" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-teal-600 border-b-2">Framework</a>
-                        <a href="#simulation" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-teal-600 border-b-2">Simulation</a>
-                        <a href="#analysis" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-teal-600 border-b-2">Analysis</a>
-                    </div>
+                <span class="font-bold text-xl text-teal-700">MADRL Framework</span>
+                <div class="hidden md:flex ml-10 items-baseline space-x-4">
+                    <a href="#introduction" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-teal-600 border-b-2">Introduction</a>
+                    <a href="#framework"    class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-teal-600 border-b-2">Framework</a>
+                    <a href="#simulation"   class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-teal-600 border-b-2">Simulation</a>
+                    <a href="#analysis"     class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-teal-600 border-b-2">Analysis</a>
                 </div>
             </div>
         </nav>
     </header>
 
     <main>
-        <!-- Introduction Section -->
+        <!-- Introduction -->
         <section id="introduction" class="py-16 md:py-24 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">Investigating LTE-U & WiFi Coexistence</h1>
+                <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">Investigating LTE-U &amp; WiFi Coexistence</h1>
                 <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-600">This framework explores how Multi-Agent Deep Reinforcement Learning (MADRL) can enhance spectrum efficiency and ensure fairness when LTE-U and WiFi networks operate in the same unlicensed frequency bands.</p>
-                
+
                 <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
                     <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-red-100 text-red-600 rounded-lg p-3">
-                                <span class="text-2xl">📡</span>
-                            </div>
+                            <div class="flex-shrink-0 bg-red-100 text-red-600 rounded-lg p-3 text-2xl">📡</div>
                             <h3 class="ml-4 text-xl font-semibold text-slate-900">The Coexistence Challenge</h3>
                         </div>
-                        <p class="mt-4 text-slate-600">LTE-U uses a scheduled, persistent channel access method, which can dominate the unlicensed spectrum. WiFi relies on a "listen-before-talk" (CSMA/CA) mechanism. Without a coordination strategy, LTE-U transmissions can block WiFi indefinitely, a problem known as "WiFi starvation," leading to poor performance and unfair resource allocation.</p>
+                        <p class="mt-4 text-slate-600">LTE-U uses a scheduled, persistent channel access method, which can dominate the unlicensed spectrum. WiFi relies on a "listen-before-talk" (CSMA/CA) mechanism. Without a coordination strategy, LTE-U transmissions can block WiFi indefinitely — a problem known as "WiFi starvation."</p>
                     </div>
                     <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-teal-100 text-teal-600 rounded-lg p-3">
-                                <span class="text-2xl">🧠</span>
-                            </div>
+                            <div class="flex-shrink-0 bg-teal-100 text-teal-600 rounded-lg p-3 text-2xl">🧠</div>
                             <h3 class="ml-4 text-xl font-semibold text-slate-900">The MADRL Solution</h3>
                         </div>
-                        <p class="mt-4 text-slate-600">MADRL provides an intelligent solution. Multiple agents (e.g., LTE-U base stations) independently learn optimal behaviors by observing the network environment and receiving rewards or penalties. They learn to adapt their transmission patterns (like duty cycles) to maximize overall system performance while ensuring WiFi networks get a fair chance to communicate, all without explicit coordination.</p>
+                        <p class="mt-4 text-slate-600">MADRL provides an intelligent solution. Multiple agents (e.g., LTE-U base stations) independently learn optimal behaviors by observing the network environment and receiving rewards or penalties. They learn to adapt their duty cycles to maximise system performance while giving WiFi a fair share of the channel.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Framework Section -->
+        <!-- Framework -->
         <section id="framework" class="py-16 md:py-24">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
                     <h2 class="text-3xl font-bold tracking-tight text-slate-900">MADRL Framework Explorer</h2>
-                    <p class="mt-3 max-w-2xl mx-auto text-lg text-slate-600">This diagram illustrates the core components of the Multi-Agent Deep Reinforcement Learning loop used in our simulation. Each agent independently cycles through this process to learn a cooperative coexistence policy.</p>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-slate-600">Each LTE-U agent independently cycles through this loop to learn a cooperative coexistence policy.</p>
                 </div>
-
                 <div class="mt-12 p-8 bg-white rounded-xl shadow-md border border-slate-200">
                     <div class="flex flex-col md:flex-row items-center justify-around gap-8">
-                        
                         <div class="text-center w-full md:w-1/3 p-4 bg-slate-50 rounded-lg">
                             <h4 class="font-bold text-teal-700 text-lg">1. Environment</h4>
-                            <p class="text-sm text-slate-600 mt-2">The shared radio space containing LTE-U eNBs, WiFi APs, and users. The environment's state changes based on agents' actions and external factors like traffic load.</p>
+                            <p class="text-sm text-slate-600 mt-2">The shared radio space containing LTE-U eNBs, WiFi APs, and users. The environment's state changes based on agents' actions and the deployment category (Residential / Office / Urban).</p>
                             <div class="text-4xl mt-4">🌐</div>
                         </div>
-
                         <div class="text-2xl text-slate-400 font-mono hidden md:block">&rarr;</div>
                         <div class="text-2xl text-slate-400 font-mono md:hidden">&darr;</div>
-
                         <div class="w-full md:w-2/3">
                             <div class="border-2 border-dashed border-slate-300 rounded-lg p-6">
                                 <h3 class="text-center text-xl font-semibold text-slate-800">Agent Learning Loop</h3>
                                 <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                                     <div class="flex flex-col items-center p-3 bg-white rounded">
-                                        <h4 class="font-bold text-teal-700">2. Observe State (S)</h4>
-                                        <p class="text-xs text-slate-500 mt-1">Agent senses channel occupancy, WiFi throughput, and its own data queue.</p>
+                                        <h4 class="font-bold text-teal-700">2. Observe State</h4>
+                                        <p class="text-xs text-slate-500 mt-1">Traffic load, channel quality, WiFi node ratio, LTE agent density.</p>
                                         <div class="text-3xl mt-2">📊</div>
                                     </div>
                                     <div class="flex flex-col items-center p-3 bg-white rounded">
-                                        <h4 class="font-bold text-teal-700">3. Select Action (A)</h4>
-                                        <p class="text-xs text-slate-500 mt-1">Based on its policy, the agent chooses an action: adjust duty cycle, change power, etc.</p>
+                                        <h4 class="font-bold text-teal-700">3. Select Action</h4>
+                                        <p class="text-xs text-slate-500 mt-1">Actor network outputs a continuous duty cycle in [0, 1].</p>
                                         <div class="text-3xl mt-2">🕹️</div>
                                     </div>
                                     <div class="flex flex-col items-center p-3 bg-white rounded">
-                                        <h4 class="font-bold text-teal-700">4. Get Reward (R)</h4>
-                                        <p class="text-xs text-slate-500 mt-1">Receives a reward based on system throughput and fairness. The policy is updated.</p>
+                                        <h4 class="font-bold text-teal-700">4. Get Reward</h4>
+                                        <p class="text-xs text-slate-500 mt-1">Reward = fairness × 100 + total throughput × 0.1. Policy updated via shared Critic.</p>
                                         <div class="text-3xl mt-2">🏆</div>
                                     </div>
                                 </div>
@@ -136,31 +125,54 @@
                 </div>
             </div>
         </section>
-        
-        <!-- Simulation Controls Section -->
+
+        <!-- Simulation Controls -->
         <section id="simulation" class="py-16 md:py-24 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="lg:text-center">
                     <h2 class="text-3xl font-bold tracking-tight text-slate-900">Interactive Simulation</h2>
-                    <p class="mt-3 max-w-2xl mx-auto text-lg text-slate-600">Configure the network scenario and select a coexistence algorithm. Press "Run Simulation" to see how your choices impact network performance in the Analysis section below.</p>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-slate-600">Configure the network scenario and select a coexistence algorithm. Press "Run Simulation" to see results in the Analysis section below.</p>
                 </div>
+
                 <div class="mt-12 max-w-4xl mx-auto bg-slate-50 p-8 rounded-xl border border-slate-200">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+
                         <div>
                             <label for="lte-agents" class="block text-sm font-medium text-slate-700">Number of LTE-U Agents</label>
-                            <input id="lte-agents" type="range" min="0" max="10" value="3" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                            <input id="lte-agents" type="range" min="0" max="10" value="3" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer mt-2">
                             <div class="text-center font-semibold text-teal-700 mt-1"><span id="lte-agents-value">3</span></div>
                         </div>
+
                         <div>
                             <label for="wifi-aps" class="block text-sm font-medium text-slate-700">Number of WiFi APs</label>
-                            <input id="wifi-aps" type="range" min="0" max="10" value="5" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-                             <div class="text-center font-semibold text-teal-700 mt-1"><span id="wifi-aps-value">5</span></div>
+                            <input id="wifi-aps" type="range" min="0" max="10" value="5" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer mt-2">
+                            <div class="text-center font-semibold text-teal-700 mt-1"><span id="wifi-aps-value">5</span></div>
                         </div>
+
+                        <!-- Traffic slider — quadratic scale, slider 1-100 → traffic 1-1000 -->
                         <div class="md:col-span-2">
-                             <label for="traffic-load" class="block text-sm font-medium text-slate-700">Shared Traffic Load</label>
-                            <input id="traffic-load" type="range" min="1" max="5" value="3" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-                            <div class="text-center font-semibold text-teal-700 mt-1"><span id="traffic-load-value">Medium</span></div>
+                            <div class="flex items-center justify-between">
+                                <label for="traffic-load" class="block text-sm font-medium text-slate-700">Shared Traffic Load</label>
+                                <span id="traffic-category-badge" class="category-badge badge-residential">Residential</span>
+                            </div>
+                            <input id="traffic-load" type="range" min="1" max="100" value="5" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer mt-2">
+
+                            <!-- Zone colour strip -->
+                            <div class="zone-strip mt-1"></div>
+                            <div class="flex justify-between text-xs text-slate-400 mt-0.5">
+                                <span>1</span>
+                                <span class="text-green-600 font-medium">← Residential (1–10)</span>
+                                <span class="text-blue-600 font-medium">Office (11–30) →</span>
+                                <span class="text-orange-600 font-medium">Urban (31–1000) →</span>
+                                <span>1000</span>
+                            </div>
+
+                            <div class="text-center font-semibold mt-2">
+                                <span id="traffic-load-value" class="text-green-600">5</span>
+                                <span id="traffic-load-desc" class="ml-2 text-xs text-slate-500 font-normal">Low device density, WiFi-friendly</span>
+                            </div>
                         </div>
+
                         <div>
                             <label for="coexistence-algorithm" class="block text-sm font-medium text-slate-700">Coexistence Algorithm</label>
                             <select id="coexistence-algorithm" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md">
@@ -169,12 +181,14 @@
                                 <option value="no_algorithm">No Algorithm (LTE Dominant)</option>
                             </select>
                         </div>
+
                         <div class="flex items-end">
                             <button id="run-simulation" class="w-full bg-teal-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition duration-300">
                                 Run Simulation
                             </button>
                         </div>
                     </div>
+
                     <div class="mt-4 text-right">
                         <button id="reset-learning" class="text-sm text-teal-600 hover:text-teal-800 underline">Reset Learning Curve</button>
                     </div>
@@ -182,288 +196,342 @@
             </div>
         </section>
 
-        <!-- Analysis Section -->
+        <!-- Analysis -->
         <section id="analysis" class="py-16 md:py-24">
-             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="lg:text-center">
                     <h2 class="text-3xl font-bold tracking-tight text-slate-900">Performance Analysis</h2>
-                    <p class="mt-3 max-w-2xl mx-auto text-lg text-slate-600">The results of the simulation are visualized below. Compare the key performance indicators (KPIs) to understand the effectiveness of the selected coexistence algorithm.</p>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-slate-600">Key performance indicators and visualisations for the selected coexistence algorithm and deployment scenario.</p>
                 </div>
 
                 <div id="results-placeholder" class="text-center mt-12 text-slate-500">
                     <p>Run a simulation to view performance results here.</p>
                 </div>
 
-                <div id="results-container" class="hidden mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
-                        <h3 class="text-lg font-semibold text-center text-slate-800">System Throughput (Mbps)</h3>
-                        <div class="chart-container">
-                            <canvas id="throughputChart"></canvas>
-                        </div>
+                <!-- KPI summary cards -->
+                <div id="kpi-cards" class="hidden mt-12 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 text-center shadow-sm">
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Scenario</p>
+                        <div id="kpi-category" class="mt-2 text-lg font-bold capitalize text-slate-800">—</div>
                     </div>
-                     <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
-                        <h3 class="text-lg font-semibold text-center text-slate-800">Jain's Fairness Index</h3>
-                         <div class="chart-container">
-                            <canvas id="fairnessChart"></canvas>
-                        </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 text-center shadow-sm">
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Throughput</p>
+                        <div id="kpi-throughput" class="mt-2 text-2xl font-bold text-teal-700">—</div>
+                        <p class="text-xs text-slate-400">Mbps</p>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
-                         <h3 class="text-lg font-semibold text-center text-slate-800">Packet Loss Rate (%)</h3>
-                         <div class="chart-container">
-                            <canvas id="packetLossChart"></canvas>
-                        </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 text-center shadow-sm">
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Jain's Fairness</p>
+                        <div id="kpi-fairness" class="mt-2 text-2xl font-bold text-teal-700">—</div>
+                        <p class="text-xs text-slate-400">0 = unfair · 1 = perfect</p>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
-                        <h3 class="text-lg font-semibold text-center text-slate-800">RL Learning Curve (Reward)</h3>
-                        <div class="chart-container">
-                            <canvas id="rlChart"></canvas>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 text-center shadow-sm">
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Avg Latency</p>
+                        <div class="mt-2">
+                            <span id="kpi-latency-lte" class="text-xl font-bold text-teal-700">—</span>
+                            <span class="text-xs text-slate-400"> LTE</span>
+                            <span class="mx-1 text-slate-300">/</span>
+                            <span id="kpi-latency-wifi" class="text-xl font-bold text-blue-600">—</span>
+                            <span class="text-xs text-slate-400"> WiFi</span>
                         </div>
+                        <p class="text-xs text-slate-400">ms</p>
                     </div>
                 </div>
-             </div>
+
+                <!-- Charts 2×2 -->
+                <div id="results-container" class="hidden mt-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                        <h3 class="text-lg font-semibold text-center text-slate-800">System Throughput (Mbps)</h3>
+                        <div class="chart-container"><canvas id="throughputChart"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                        <h3 class="text-lg font-semibold text-center text-slate-800">Jain's Fairness Index</h3>
+                        <div class="chart-container"><canvas id="fairnessChart"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                        <h3 class="text-lg font-semibold text-center text-slate-800">Packet Loss Rate (%)</h3>
+                        <div class="chart-container"><canvas id="packetLossChart"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                        <h3 class="text-lg font-semibold text-center text-slate-800">End-to-End Latency (ms)</h3>
+                        <div class="chart-container"><canvas id="latencyChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- RL Learning Curve — full width -->
+                <div id="rl-container" class="hidden mt-8 bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                    <h3 class="text-lg font-semibold text-center text-slate-800">RL Learning Curve (Reward over Runs)</h3>
+                    <div class="chart-container chart-container-wide"><canvas id="rlChart"></canvas></div>
+                </div>
+
+            </div>
         </section>
     </main>
 
     <footer class="bg-slate-800 text-white">
         <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center text-sm">
-            <p>MADRL Interactive Framework | A Conceptual Tool for Spectrum Efficiency Research</p>
+            <p>MADRL Interactive Framework — Spectrum Efficiency Research</p>
         </div>
     </footer>
 
     <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM elements
-    const lteSlider = document.getElementById('lte-agents');
-    const lteValue = document.getElementById('lte-agents-value');
-    const wifiSlider = document.getElementById('wifi-aps');
-    const wifiValue = document.getElementById('wifi-aps-value');
-    const trafficSlider = document.getElementById('traffic-load');
-    const trafficValue = document.getElementById('traffic-load-value');
-    const runButton = document.getElementById('run-simulation');
-    const resetLearningBtn = document.getElementById('reset-learning');
+    // ── Quadratic scale helpers ────────────────────────────────────────────
+    // Slider range: 1–100  →  Traffic range: 1–1000
+    function sliderToTraffic(v) {
+        return Math.round(1 + 999 * Math.pow((v - 1) / 99, 2));
+    }
+    function trafficToSlider(t) {
+        return Math.round(1 + 99 * Math.sqrt((t - 1) / 999));
+    }
+
+    function categoryOf(t) {
+        if (t <= 10)  return 'residential';
+        if (t <= 30)  return 'office';
+        return 'urban';
+    }
+
+    const CATEGORY_META = {
+        residential: { label: 'Residential', badgeCls: 'badge-residential', valueCls: 'text-green-600', desc: 'Low device density, WiFi-friendly' },
+        office:      { label: 'Office',      badgeCls: 'badge-office',      valueCls: 'text-blue-600',  desc: 'Moderate contention, bursty patterns' },
+        urban:       { label: 'Urban',       badgeCls: 'badge-urban',       valueCls: 'text-orange-600',desc: 'High contention, dense device mix' },
+    };
+
+    // ── DOM refs ──────────────────────────────────────────────────────────
+    const lteSlider       = document.getElementById('lte-agents');
+    const lteValue        = document.getElementById('lte-agents-value');
+    const wifiSlider      = document.getElementById('wifi-aps');
+    const wifiValue       = document.getElementById('wifi-aps-value');
+    const trafficSlider   = document.getElementById('traffic-load');
+    const trafficValueEl  = document.getElementById('traffic-load-value');
+    const trafficDescEl   = document.getElementById('traffic-load-desc');
+    const trafficBadge    = document.getElementById('traffic-category-badge');
+    const runButton       = document.getElementById('run-simulation');
+    const resetBtn        = document.getElementById('reset-learning');
     const algorithmSelect = document.getElementById('coexistence-algorithm');
-    const resultsPlaceholder = document.getElementById('results-placeholder');
+    const placeholder     = document.getElementById('results-placeholder');
+    const kpiCards        = document.getElementById('kpi-cards');
     const resultsContainer = document.getElementById('results-container');
+    const rlContainer     = document.getElementById('rl-container');
 
-    const trafficLabels = { 1: 'Very Low', 2: 'Low', 3: 'Medium', 4: 'High', 5: 'Very High' };
+    // KPI elements
+    const kpiCategory    = document.getElementById('kpi-category');
+    const kpiThroughput  = document.getElementById('kpi-throughput');
+    const kpiFairness    = document.getElementById('kpi-fairness');
+    const kpiLatencyLte  = document.getElementById('kpi-latency-lte');
+    const kpiLatencyWifi = document.getElementById('kpi-latency-wifi');
 
-    // Update slider displays
-    lteSlider.addEventListener('input', () => lteValue.textContent = lteSlider.value);
+    // ── Slider callbacks ──────────────────────────────────────────────────
+    lteSlider.addEventListener('input',  () => lteValue.textContent  = lteSlider.value);
     wifiSlider.addEventListener('input', () => wifiValue.textContent = wifiSlider.value);
-    trafficSlider.addEventListener('input', () => trafficValue.textContent = trafficLabels[trafficSlider.value]);
 
-    // Chart instances
-    let throughputChart, fairnessChart, packetLossChart, rlChart;
+    function updateTrafficUI() {
+        const traffic  = sliderToTraffic(parseInt(trafficSlider.value));
+        const cat      = categoryOf(traffic);
+        const meta     = CATEGORY_META[cat];
 
-    // Learning curve history storage (persists across runs)
+        trafficValueEl.textContent = traffic;
+        trafficValueEl.className   = `font-semibold ${meta.valueCls}`;
+        trafficDescEl.textContent  = meta.desc;
+
+        trafficBadge.textContent = meta.label;
+        trafficBadge.className   = `category-badge ${meta.badgeCls}`;
+    }
+    trafficSlider.addEventListener('input', updateTrafficUI);
+    updateTrafficUI();   // initialise on load
+
+    // ── Chart state ───────────────────────────────────────────────────────
+    let throughputChart, fairnessChart, packetLossChart, latencyChart, rlChart;
     let rewardHistory = [];
 
-    // Chart options factory
-    const chartOptions = (maxY = null) => ({
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { position: 'top' }
-        },
-        scales: {
-            y: { 
-                beginAtZero: true,
-                ...(maxY && { max: maxY })
-            }
-        }
+    const baseOpts = (maxY = null) => ({
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: { y: { beginAtZero: true, ...(maxY != null && { max: maxY }) } },
     });
 
-    // Initialize all charts
-    function initializeCharts() {
-        // Throughput chart
+    function initCharts() {
         throughputChart = new Chart(document.getElementById('throughputChart'), {
             type: 'bar',
             data: {
                 labels: ['LTE-U (total)', 'WiFi', 'Total'],
-                datasets: [{
-                    label: 'Throughput (Mbps)',
-                    data: [0, 0, 0],
-                    backgroundColor: ['#0f766e', '#14b8a6', '#64748b'],
-                }]
+                datasets: [{ label: 'Throughput (Mbps)', data: [0, 0, 0],
+                    backgroundColor: ['#0f766e', '#14b8a6', '#64748b'] }],
             },
-            options: chartOptions()
+            options: baseOpts(),
         });
 
-        // Fairness chart
         fairnessChart = new Chart(document.getElementById('fairnessChart'), {
             type: 'bar',
             data: {
                 labels: ["Jain's Fairness Index"],
-                datasets: [{
-                    label: 'Fairness Index',
-                    data: [0],
-                    backgroundColor: ['#0d9488'],
-                }]
+                datasets: [{ label: 'Fairness Index', data: [0],
+                    backgroundColor: ['#0d9488'] }],
             },
-            options: chartOptions(1)
+            options: baseOpts(1),
         });
 
-        // Packet loss chart
         packetLossChart = new Chart(document.getElementById('packetLossChart'), {
             type: 'bar',
             data: {
                 labels: ['LTE-U (avg)', 'WiFi'],
-                datasets: [{
-                    label: 'Packet Loss (%)',
-                    data: [0, 0],
-                    backgroundColor: ['#0f766e', '#14b8a6'],
-                }]
+                datasets: [{ label: 'Packet Loss (%)', data: [0, 0],
+                    backgroundColor: ['#0f766e', '#14b8a6'] }],
             },
-            options: chartOptions(100)
+            options: baseOpts(100),
         });
 
-        // RL learning curve chart
+        latencyChart = new Chart(document.getElementById('latencyChart'), {
+            type: 'bar',
+            data: {
+                labels: ['LTE-U', 'WiFi'],
+                datasets: [{ label: 'Latency (ms)', data: [0, 0],
+                    backgroundColor: ['#1d4ed8', '#60a5fa'] }],
+            },
+            options: baseOpts(),
+        });
+
         rlChart = new Chart(document.getElementById('rlChart'), {
             type: 'line',
             data: {
                 labels: [],
                 datasets: [{
-                    label: 'Reward',
-                    data: [],
-                    borderColor: '#0d9488',
-                    backgroundColor: 'rgba(13, 148, 136, 0.1)',
-                    tension: 0.3,
-                    fill: true
-                }]
+                    label: 'Reward', data: [],
+                    borderColor: '#0d9488', backgroundColor: 'rgba(13,148,136,0.1)',
+                    tension: 0.3, fill: true,
+                }],
             },
             options: {
-                ...chartOptions(),
+                ...baseOpts(),
                 scales: {
                     x: { title: { display: true, text: 'Simulation Run' } },
-                    y: { title: { display: true, text: 'Reward' } }
-                }
-            }
+                    y: { title: { display: true, text: 'Reward' }, beginAtZero: false },
+                },
+            },
         });
     }
 
-    // API call
+    // ── API call ──────────────────────────────────────────────────────────
     async function runSimulation(settings) {
-        const response = await fetch('/api/simulation/run/', {
+        const res = await fetch('/api/simulation/run/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 lte_agents: settings.lte,
-                wifi_aps: settings.wifi,
-                traffic: settings.traffic,
-                algorithm: settings.algorithm
-            })
+                wifi_aps:   settings.wifi,
+                traffic:    settings.traffic,
+                algorithm:  settings.algorithm,
+            }),
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error ${response.status}`);
-        }
-        return await response.json();
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
     }
 
-    // Update charts with new simulation data
+    // ── Update charts & KPIs ─────────────────────────────────────────────
     function updateCharts(data) {
-        // Extract values (handling multi-agent format)
-        let lteThroughputTotal = 0;
-        if (Array.isArray(data.throughput.lte)) {
-            lteThroughputTotal = data.throughput.lte.reduce((sum, val) => sum + val, 0);
-        } else {
-            lteThroughputTotal = data.throughput.lte || 0;
-        }
-        const wifiThroughput = data.throughput.wifi || 0;
-        const totalThroughput = data.throughput.total || (lteThroughputTotal + wifiThroughput);
-        
+        const lteTot  = Array.isArray(data.throughput.lte)
+            ? data.throughput.lte.reduce((s, v) => s + v, 0)
+            : (data.throughput.lte || 0);
+        const wifiTot = data.throughput.wifi || 0;
+        const total   = data.throughput.total || (lteTot + wifiTot);
         const fairness = data.fairness || 0;
-        
-        let ltePacketLossAvg = 0;
-        if (Array.isArray(data.packet_loss.lte)) {
-            ltePacketLossAvg = data.packet_loss.lte.reduce((sum, val) => sum + val, 0) / data.packet_loss.lte.length;
-        } else {
-            ltePacketLossAvg = data.packet_loss.lte || 0;
-        }
-        const wifiPacketLoss = data.packet_loss.wifi || 0;
+        const lteAvgPl = Array.isArray(data.packet_loss.lte)
+            ? data.packet_loss.lte.reduce((s, v) => s + v, 0) / data.packet_loss.lte.length
+            : (data.packet_loss.lte || 0);
+        const wifiPl   = data.packet_loss.wifi || 0;
+        const lteMs    = (data.latency && data.latency.lte)  || 0;
+        const wifiMs   = (data.latency && data.latency.wifi) || 0;
 
-        // Update throughput chart
+        // KPI cards
+        const cat  = data.category || 'urban';
+        const meta = CATEGORY_META[cat] || CATEGORY_META.urban;
+        kpiCategory.innerHTML = `<span class="category-badge ${meta.badgeCls}">${meta.label}</span>`;
+        kpiThroughput.textContent  = total.toFixed(1);
+        kpiFairness.textContent    = fairness.toFixed(3);
+        kpiLatencyLte.textContent  = lteMs.toFixed(1);
+        kpiLatencyWifi.textContent = wifiMs.toFixed(1);
+
+        // Throughput chart
         throughputChart.data.datasets[0].data = [
-            Math.round(lteThroughputTotal * 100) / 100,
-            Math.round(wifiThroughput * 100) / 100,
-            Math.round(totalThroughput * 100) / 100
+            Math.round(lteTot  * 100) / 100,
+            Math.round(wifiTot * 100) / 100,
+            Math.round(total   * 100) / 100,
         ];
         throughputChart.update();
 
-        // Update fairness chart
+        // Fairness chart
         fairnessChart.data.datasets[0].data = [Math.round(fairness * 1000) / 1000];
         fairnessChart.update();
 
-        // Update packet loss chart
+        // Packet loss chart
         packetLossChart.data.datasets[0].data = [
-            Math.round(ltePacketLossAvg * 100) / 100,
-            Math.round(wifiPacketLoss * 100) / 100
+            Math.round(lteAvgPl * 100) / 100,
+            Math.round(wifiPl   * 100) / 100,
         ];
         packetLossChart.update();
 
-        // Handle RL reward and history
+        // Latency chart
+        latencyChart.data.datasets[0].data = [
+            Math.round(lteMs  * 100) / 100,
+            Math.round(wifiMs * 100) / 100,
+        ];
+        latencyChart.update();
+
+        // RL reward history
         if (data.rl && typeof data.rl.reward === 'number') {
-            const reward = data.rl.reward;
-            rewardHistory.push(reward);
-            // Keep last 50 runs for clarity
+            rewardHistory.push(data.rl.reward);
             if (rewardHistory.length > 50) rewardHistory.shift();
-            
-            // Update RL chart
-            rlChart.data.labels = rewardHistory.map((_, i) => i + 1);
+            rlChart.data.labels   = rewardHistory.map((_, i) => i + 1);
             rlChart.data.datasets[0].data = rewardHistory;
             rlChart.update();
         }
     }
 
-    // Reset learning curve
-    function resetLearningCurve() {
+    // ── Run button ────────────────────────────────────────────────────────
+    runButton.addEventListener('click', async () => {
+        const traffic = sliderToTraffic(parseInt(trafficSlider.value));
+        const settings = {
+            lte:       parseInt(lteSlider.value),
+            wifi:      parseInt(wifiSlider.value),
+            traffic,
+            algorithm: algorithmSelect.value,
+        };
+
+        if (!throughputChart) initCharts();
+
+        placeholder.classList.add('hidden');
+        kpiCards.classList.remove('hidden');
+        resultsContainer.classList.remove('hidden');
+        rlContainer.classList.remove('hidden');
+
+        runButton.disabled    = true;
+        runButton.textContent = 'Running…';
+
+        try {
+            const data = await runSimulation(settings);
+            updateCharts(data);
+            document.getElementById('analysis').scrollIntoView({ behavior: 'smooth' });
+        } catch (err) {
+            console.error('Simulation error:', err);
+            alert('Simulation failed. Check the console for details.');
+        } finally {
+            runButton.disabled    = false;
+            runButton.textContent = 'Run Simulation';
+        }
+    });
+
+    // ── Reset learning curve ──────────────────────────────────────────────
+    resetBtn.addEventListener('click', (e) => {
+        e.preventDefault();
         rewardHistory = [];
         if (rlChart) {
             rlChart.data.labels = [];
             rlChart.data.datasets[0].data = [];
             rlChart.update();
         }
-    }
-
-    // Main simulation run handler
-    runButton.addEventListener('click', async () => {
-        const settings = {
-            lte: parseInt(lteSlider.value),
-            wifi: parseInt(wifiSlider.value),
-            traffic: parseInt(trafficSlider.value),
-            algorithm: algorithmSelect.value
-        };
-
-        // Initialize charts on first run
-        if (!throughputChart) {
-            initializeCharts();
-        }
-
-        resultsPlaceholder.classList.add('hidden');
-        resultsContainer.classList.remove('hidden');
-
-        try {
-            const data = await runSimulation(settings);
-            console.log("Simulation response:", data);
-            updateCharts(data);
-            
-            // Smooth scroll to analysis
-            document.getElementById('analysis').scrollIntoView({ behavior: 'smooth' });
-        } catch (error) {
-            console.error("Simulation error:", error);
-            alert("Simulation failed. Check console for details.");
-        }
     });
 
-    // Reset learning curve button
-    if (resetLearningBtn) {
-        resetLearningBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            resetLearningCurve();
-        });
-    }
-
-    // Initialize charts immediately so they are ready (empty)
-    initializeCharts();
+    // Pre-initialise charts so they render empty on first load
+    initCharts();
 });
     </script>
 </body>

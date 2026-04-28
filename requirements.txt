@@ -4,6 +4,7 @@ filelock
 fsspec
 Jinja2
 MarkupSafe
+matplotlib
 mpmath
 networkx
 numpy
